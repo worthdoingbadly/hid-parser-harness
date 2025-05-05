@@ -1990,7 +1990,7 @@ EXPORT_SYMBOL_GPL(__hid_request);
 void zhuowei_hid_send_reports(struct hid_device* hid) {
 	struct hid_report_enum *rep_enum;
 	struct hid_report *rep;
-	rep_enum = &hid->report_enum[HID_INPUT_REPORT];
+	rep_enum = &hid->report_enum[HID_OUTPUT_REPORT];
 	list_for_each_entry(rep, &rep_enum->report_list, list) {
 		__hid_request(hid, rep, HID_REQ_SET_REPORT);
 	}
