@@ -10,6 +10,7 @@ void _dev_warn() {}
 void _dev_err() {}
 void __dynamic_pr_debug() {}
 void hid_dump_input() {}
+void hid_input_report() {}
 
 unsigned long random_kmalloc_seed;
 
@@ -68,7 +69,9 @@ struct hid_driver {
 };
 
 struct hid_ll_driver {
-  char pad[0x68];
+  char pad[0x40]; // 0
+int                        (*raw_request)(struct hid_device *, unsigned char, u8 *, size_t, unsigned char, int);
+char pad2[0x68 - 0x48]; // 0x48
 };
 
 struct hid_device {
@@ -87,9 +90,20 @@ static_assert(offsetof(struct hid_device, ll_driver) == 0x1bf0, "ll_driver");
 int hid_open_report(struct hid_device* device);
 void hid_close_report(struct hid_device* device);
 void zhuowei_hid_init_report(struct hid_device* device);
+int zhuowei_hid_send_reports(struct hid_device* hid);
 
 struct hid_driver kEmptyDriver;
 struct hid_ll_driver kEmptyLlDriver;
+
+static int ll_raw_request(struct hid_device* hid, unsigned char arg2, u8* buf, size_t size, unsigned char arg3, int arg4) {
+	for (int i = 0; i < size; i++) {
+		u8 a = buf[i];
+		if (a == 0xbe) {
+			abort();
+		}
+	}
+	return 0;
+}
 
 int LLVMFuzzerTestOneInput(uint8_t* Data, size_t Size) {
   struct hid_device device = {
@@ -98,10 +112,13 @@ int LLVMFuzzerTestOneInput(uint8_t* Data, size_t Size) {
       .driver = &kEmptyDriver,
       .ll_driver = &kEmptyLlDriver,
   };
+  kEmptyLlDriver.raw_request = &ll_raw_request;
   zhuowei_hid_init_report(&device);
   int err = hid_open_report(&device);
-  if (!err) {
-    hid_close_report(&device);
+  if (err) {
+    return 0;
   }
+  zhuowei_hid_send_reports(&device);
+  hid_close_report(&device);
   return 0;
 }

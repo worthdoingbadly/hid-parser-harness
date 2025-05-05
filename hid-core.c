@@ -35,6 +35,12 @@
 
 #include "hid-ids.h"
 
+// zhuowei
+#undef hid_warn
+#undef hid_warn_once
+#define hid_warn(...)
+#define hid_warn_once(...)
+
 /*
  * Version Information
  */
@@ -1943,8 +1949,6 @@ static struct hid_report *hid_get_report(struct hid_report_enum *report_enum,
 	return report;
 }
 
-#if 0
-
 /*
  * Implement a generic .request() callback, using .raw_request()
  * DO NOT USE in hid drivers directly, but through hid_hw_request instead.
@@ -1983,6 +1987,16 @@ out:
 }
 EXPORT_SYMBOL_GPL(__hid_request);
 
+void zhuowei_hid_send_reports(struct hid_device* hid) {
+	struct hid_report_enum *rep_enum;
+	struct hid_report *rep;
+	rep_enum = &hid->report_enum[HID_INPUT_REPORT];
+	list_for_each_entry(rep, &rep_enum->report_list, list) {
+		__hid_request(hid, rep, HID_REQ_SET_REPORT);
+	}
+}
+
+#if 0
 int hid_report_raw_event(struct hid_device *hid, enum hid_report_type type, u8 *data, u32 size,
 			 int interrupt)
 {
