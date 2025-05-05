@@ -41,9 +41,11 @@
 
 #define DRIVER_DESC "HID core driver"
 
+#if 0
 static int hid_ignore_special_drivers = 0;
 module_param_named(ignore_special_drivers, hid_ignore_special_drivers, int, 0600);
 MODULE_PARM_DESC(ignore_special_drivers, "Ignore any special drivers and handle all devices by generic driver");
+#endif
 
 /*
  * Register a new report for a device.
@@ -665,11 +667,12 @@ static void hid_free_report(struct hid_report *report)
 	kfree(report);
 }
 
+// zhuowei: remove static
 /*
  * Close report. This function returns the device
  * state to the point prior to hid_open_report().
  */
-static void hid_close_report(struct hid_device *device)
+void hid_close_report(struct hid_device *device)
 {
 	unsigned i, j;
 
@@ -696,6 +699,16 @@ static void hid_close_report(struct hid_device *device)
 	device->maxapplication = 0;
 
 	device->status &= ~HID_STAT_PARSED;
+}
+// zhuowei: add...
+void zhuowei_hid_init_report(struct hid_device *device)
+{
+	unsigned i;
+
+	for (i = 0; i < HID_REPORT_TYPES; i++) {
+		struct hid_report_enum *report_enum = device->report_enum + i;
+		INIT_LIST_HEAD(&report_enum->report_list);
+	}
 }
 
 /*
@@ -1930,6 +1943,8 @@ static struct hid_report *hid_get_report(struct hid_report_enum *report_enum,
 	return report;
 }
 
+#if 0
+
 /*
  * Implement a generic .request() callback, using .raw_request()
  * DO NOT USE in hid drivers directly, but through hid_hw_request instead.
@@ -3019,6 +3034,7 @@ static void __exit hid_exit(void)
 
 module_init(hid_init);
 module_exit(hid_exit);
+#endif
 
 MODULE_AUTHOR("Andreas Gal");
 MODULE_AUTHOR("Vojtech Pavlik");
