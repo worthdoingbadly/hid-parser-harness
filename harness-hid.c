@@ -96,7 +96,7 @@ struct hid_driver kEmptyDriver;
 struct hid_ll_driver kEmptyLlDriver;
 
 static int ll_raw_request(struct hid_device* hid, unsigned char arg2, u8* buf, size_t size, unsigned char arg3, int arg4) {
-	for (int i = 0; i < size; i++) {
+	for (int i = 1; i < size; i++) {
 		u8 a = buf[i];
 		if (a == 0xbe) {
 			abort();
